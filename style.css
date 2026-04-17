@@ -1,0 +1,792 @@
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #1b4332;
+    font-family:
+        system-ui,
+        -apple-system,
+        sans-serif;
+    overscroll-behavior: none;
+    color: #ecf0f1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN MANAGEMENT
+═══════════════════════════════════════════════════════════ */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Non-game screens centre their content */
+#screen-home,
+#screen-hosting,
+#screen-join,
+#screen-gameover {
+    align-items: center;
+    justify-content: center;
+    height: 100dvh;
+    background: #1b4332;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HOME & LOBBY LAYOUTS
+═══════════════════════════════════════════════════════════ */
+.home-content,
+.lobby-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.home-logo {
+    font-size: 80px;
+    line-height: 1;
+}
+
+.home-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+}
+
+.home-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CODE DISPLAY & INPUT
+═══════════════════════════════════════════════════════════ */
+.code-display {
+    font-size: 52px;
+    font-weight: 800;
+    letter-spacing: 12px;
+    color: #f0c040;
+    font-family: monospace;
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+}
+
+.code-input {
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: 12px;
+    text-align: center;
+    width: 180px;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.25);
+    color: #f0c040;
+    font-family: monospace;
+    outline: none;
+}
+
+.code-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOBBY TEXT
+═══════════════════════════════════════════════════════════ */
+.lobby-hint {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    text-align: center;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.lobby-status {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 15px;
+    text-align: center;
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SPINNER
+═══════════════════════════════════════════════════════════ */
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #f0c040;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════════ */
+.btn {
+    display: block;
+    padding: 14px 24px;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    min-width: 200px;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #f0c040;
+    color: #1a1a2e;
+}
+
+.btn-primary:active {
+    background: #d4a800;
+    transform: scale(0.97);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:active {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.97);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    padding: 10px 20px;
+    min-width: unset;
+}
+
+.btn-ghost:active {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.btn.hidden,
+.hidden {
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GAME SCREEN LAYOUT
+═══════════════════════════════════════════════════════════ */
+#screen-game {
+    height: 100dvh;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* — Header — */
+.game-header {
+    height: 75px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0 12px;
+    gap: 8px;
+}
+
+.score-block {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+}
+
+.score-block.opponent {
+    align-items: flex-start;
+}
+
+.score-block.me {
+    align-items: flex-end;
+}
+
+.player-name {
+    font-size: 11px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    color: #ecf0f1;
+    letter-spacing: 0.5px;
+}
+
+#opp-label,
+#my-label {
+    font-size: 11px;
+    opacity: 0.7;
+    text-transform: uppercase;
+    color: #ecf0f1;
+    letter-spacing: 0.5px;
+}
+
+.score-track {
+    height: 6px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    margin: 3px 0;
+    overflow: hidden;
+}
+
+.score-bar {
+    height: 100%;
+    background: #f39c12;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+    min-width: 0;
+}
+
+#score-opp,
+#score-me {
+    font-size: 24px;
+    font-weight: bold;
+    color: #f39c12;
+    line-height: 1;
+}
+
+.phase-block {
+    flex-grow: 1;
+    text-align: center;
+}
+
+#phase-label {
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+#dealer-label {
+    font-size: 11px;
+    opacity: 0.6;
+    color: #ffffff;
+    margin-top: 2px;
+}
+
+/* — Hand Areas — */
+.hand-area {
+    height: 108px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 8px;
+}
+
+.opp-area {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.my-area {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.hand-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    overflow-x: auto;
+    padding: 4px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.hand-row::-webkit-scrollbar {
+    display: none;
+}
+
+/* — Play Area — */
+#play-area,
+.play-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #2d6a4f;
+    padding: 12px;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#play-area::-webkit-scrollbar {
+    display: none;
+}
+
+/* — Footer — */
+.game-footer {
+    min-height: 80px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px 16px;
+}
+
+#game-message {
+    color: #ffffff;
+    font-size: 14px;
+    text-align: center;
+    min-height: 20px;
+    line-height: 1.4;
+}
+
+#btn-action {
+    width: 100%;
+    max-width: 320px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════════════════ */
+.card {
+    width: 52px;
+    height: 76px;
+    border-radius: 7px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-family: Georgia, serif;
+    user-select: none;
+    flex-shrink: 0;
+    color: #1a1a2e;
+}
+
+.card.red {
+    color: #c0392b;
+}
+
+.card .rank-top {
+    position: absolute;
+    top: 4px;
+    left: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.card .suit-top {
+    position: absolute;
+    top: 17px;
+    left: 5px;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.card .suit-center {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.card .rank-bot {
+    position: absolute;
+    bottom: 4px;
+    right: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+    transform: rotate(180deg);
+}
+
+.card .suit-bot {
+    position: absolute;
+    bottom: 17px;
+    right: 5px;
+    font-size: 11px;
+    line-height: 1;
+    transform: rotate(180deg);
+}
+
+/* Face-down card */
+.card.face-down {
+    background: linear-gradient(
+        135deg,
+        #1565c0 25%,
+        #1976d2 25%,
+        #1976d2 50%,
+        #1565c0 50%,
+        #1565c0 75%,
+        #1976d2 75%
+    );
+    background-size: 10px 10px;
+    border-color: #0d47a1;
+}
+
+/* Selected card */
+.card.selected {
+    transform: translateY(-18px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    outline: 3px solid #f0c040;
+}
+
+/* Selectable card */
+.card.selectable {
+    cursor: pointer;
+    transition:
+        transform 0.12s,
+        box-shadow 0.12s;
+}
+
+.card.selectable:active {
+    transform: translateY(-6px);
+}
+
+/* Selectable + selected together (keep selected lift on active) */
+.card.selectable.selected:active {
+    transform: translateY(-18px);
+}
+
+/* Starter card highlight */
+.card.starter-card {
+    outline: 2px solid #f0c040;
+}
+
+/* Dimmed card (cannot be played) */
+.card.dim {
+    opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PEG / PLAY AREA CONTENT  (injected by JS)
+═══════════════════════════════════════════════════════════ */
+.peg-total-display {
+    font-size: 56px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    text-align: center;
+}
+
+.peg-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.peg-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+/* Wrapper injected into #play-area during pegging */
+.peg-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 2px;
+}
+
+/* Wrapper injected into #play-area during discard phase */
+.phase-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.phase-icon {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.phase-info-text {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.crib-owner-text {
+    color: #f0c040;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* "+" separator between hand cards and starter in scoring modal */
+.card-sep {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    font-weight: bold;
+    align-self: center;
+    padding: 0 4px;
+}
+
+.go-badge {
+    display: inline-block;
+    background: #e74c3c;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.starter-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.starter-label-text {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CUT DECK
+═══════════════════════════════════════════════════════════ */
+.cut-deck-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.deck-stack {
+    position: relative;
+    width: 52px;
+    height: 76px;
+}
+
+/* Pseudo-element cards stacked behind */
+.deck-stack::before,
+.deck-stack::after {
+    content: "";
+    position: absolute;
+    width: 52px;
+    height: 76px;
+    border-radius: 7px;
+    background: linear-gradient(
+        135deg,
+        #1565c0 25%,
+        #1976d2 25%,
+        #1976d2 50%,
+        #1565c0 50%,
+        #1565c0 75%,
+        #1976d2 75%
+    );
+    background-size: 10px 10px;
+    border: 1px solid #0d47a1;
+    box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.deck-stack::before {
+    top: -3px;
+    left: -3px;
+}
+
+.deck-stack::after {
+    top: -6px;
+    left: -6px;
+}
+
+/* The actual top card of the stack sits at natural position */
+.deck-stack > .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCORING OVERLAY
+═══════════════════════════════════════════════════════════ */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.scoring-modal {
+    background: #1b4332;
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 380px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scoring-modal::-webkit-scrollbar {
+    display: none;
+}
+
+.scoring-title {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+}
+
+.scoring-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.scoring-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.scoring-items li {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 15px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.scoring-items li .pts {
+    color: #f0c040;
+    font-weight: bold;
+}
+
+.scoring-total {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #f0c040;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.no-points {
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════════════ */
+.toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0, 0, 0, 0.85);
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    white-space: nowrap;
+    z-index: 200;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GAME OVER SCREEN
+═══════════════════════════════════════════════════════════ */
+.gameover-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 32px 24px;
+    text-align: center;
+}
+
+.gameover-emoji {
+    font-size: 80px;
+    line-height: 1;
+}
+
+#gameover-title {
+    font-size: 40px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+}
+
+.gameover-scores {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    margin: 0;
+}

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1b4332">
+  <title>Crib</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 1 · HOME
+  ════════════════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-content">
+      <div class="home-logo">🃏</div>
+      <h1 class="home-title">Crib</h1>
+      <p class="home-subtitle">Two-player cribbage, anywhere</p>
+      <button id="btn-start" class="btn btn-primary">Start Game</button>
+      <button id="btn-join" class="btn btn-secondary">Join Game</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 2 · HOSTING
+  ════════════════════════════════════════════════ -->
+  <div id="screen-hosting" class="screen">
+    <div class="lobby-content">
+      <h2 class="home-title" style="font-size:28px;">Your game code</h2>
+      <div id="room-code" class="code-display">····</div>
+      <p class="lobby-hint">Share this code with your opponent.<br>They'll enter it to join your game.</p>
+      <div class="spinner"></div>
+      <p id="hosting-status" class="lobby-status">Waiting for opponent…</p>
+      <button id="btn-cancel-host" class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 3 · JOIN
+  ════════════════════════════════════════════════ -->
+  <div id="screen-join" class="screen">
+    <div class="lobby-content">
+      <h2 class="home-title" style="font-size:28px;">Enter game code</h2>
+      <input
+        id="code-input"
+        class="code-input"
+        type="text"
+        maxlength="4"
+        autocapitalize="characters"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        placeholder="····"
+      >
+      <button id="btn-join-game" class="btn btn-primary">Join Game</button>
+      <p id="join-status" class="lobby-status">&nbsp;</p>
+      <button id="btn-back" class="btn btn-ghost">Back</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 4 · GAME
+  ════════════════════════════════════════════════ -->
+  <div id="screen-game" class="screen">
+
+    <!-- Header: scores + phase -->
+    <div class="game-header">
+
+      <div class="score-block opponent">
+        <div id="opp-label" class="player-name">Opponent</div>
+        <div class="score-track">
+          <div id="opp-bar" class="score-bar" style="width:0%"></div>
+        </div>
+        <div id="score-opp">0</div>
+      </div>
+
+      <div class="phase-block">
+        <div id="phase-label">Dealing</div>
+        <div id="dealer-label">Dealer: —</div>
+      </div>
+
+      <div class="score-block me">
+        <div id="my-label" class="player-name">You</div>
+        <div class="score-track">
+          <div id="my-bar" class="score-bar" style="width:0%"></div>
+        </div>
+        <div id="score-me">0</div>
+      </div>
+
+    </div><!-- /.game-header -->
+
+    <!-- Opponent hand -->
+    <div class="hand-area opp-area">
+      <div id="opp-hand" class="hand-row"></div>
+    </div>
+
+    <!-- Central play area (content swapped by JS) -->
+    <div id="play-area" class="play-area"></div>
+
+    <!-- My hand -->
+    <div class="hand-area my-area">
+      <div id="my-hand" class="hand-row"></div>
+    </div>
+
+    <!-- Footer: message + action button -->
+    <div class="game-footer">
+      <div id="game-message">Welcome</div>
+      <button id="btn-action" class="btn btn-primary hidden">OK</button>
+    </div>
+
+  </div><!-- /#screen-game -->
+
+  <!-- ═══════════════════════════════════════════════
+       SCREEN 5 · GAME OVER
+  ════════════════════════════════════════════════ -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-content">
+      <div id="gameover-emoji" class="gameover-emoji">🏆</div>
+      <h2 id="gameover-title">You Win!</h2>
+      <p id="gameover-scores" class="gameover-scores">121 – 98</p>
+      <button id="btn-play-again" class="btn btn-primary">Play Again</button>
+      <button id="btn-go-home" class="btn btn-ghost">Home</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       OVERLAY · SCORING
+  ════════════════════════════════════════════════ -->
+  <div id="scoring-overlay" class="overlay hidden">
+    <div class="scoring-modal">
+      <h3 id="scoring-title" class="scoring-title">Hand Score</h3>
+      <div id="scoring-cards" class="scoring-cards"></div>
+      <ul id="scoring-items" class="scoring-items"></ul>
+      <div id="scoring-total" class="scoring-total">Total: 0 pts</div>
+      <button id="btn-scoring-continue" class="btn btn-primary" style="align-self:stretch;">Continue</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       TOAST
+  ════════════════════════════════════════════════ -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Dependencies -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
