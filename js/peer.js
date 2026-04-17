@@ -5,21 +5,34 @@
 // Letters that are visually unambiguous (no I, O)
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 
-// Explicit ICE config — two reliable Google STUN servers only.
+// ─── ICE / TURN configuration ─────────────────────────────────────────────────
+// STUN alone is not enough when either player is on mobile data (carrier-grade
+// NAT) or behind a strict firewall — a TURN relay is required in those cases.
 //
-// WHY NO TURN: Modern browsers obfuscate local IPs with mDNS (.local names),
-// which can break same-machine WebRTC. A TURN server would work around this,
-// but free public TURN services are unreliable. In practice:
+// HOW TO ADD FREE TURN (takes ~2 minutes):
+//   1. Sign up free at https://dashboard.metered.ca/signup
+//   2. Go to TURN → ICE Server Credentials in the dashboard
+//   3. Replace the placeholder object below with the credentials they provide
 //
-//   • Two different devices (phone + laptop, two phones) on any network
-//     → works fine with STUN alone for most home/mobile connections.
-//   • Same machine, two tabs → unreliable without TURN; just use two devices.
-//   • Behind strict corporate/symmetric NAT → would need TURN; add your own
-//     (e.g. a free Metered.ca account) by setting the iceServers below.
+// The final iceServers array should look roughly like:
+//   { urls: "stun:stun.relay.metered.ca:80" },
+//   { urls: "turn:global.relay.metered.ca:80",       username: "xxx", credential: "yyy" },
+//   { urls: "turn:global.relay.metered.ca:80?transport=tcp", username: "xxx", credential: "yyy" },
+//   { urls: "turn:global.relay.metered.ca:443",      username: "xxx", credential: "yyy" },
+//   { urls: "turn:global.relay.metered.ca:443?transport=tcp", username: "xxx", credential: "yyy" },
 const ICE_CONFIG = {
+  // iceCandidatePoolSize pre-gathers STUN (srflx) candidates before the
+  // connection starts. Without this, the mDNS-obfuscated host candidate is
+  // sent first and fails fast, and the real public-IP srflx candidate arrives
+  // too late via trickle ICE — ICE gives up before ever trying the good pair.
+  iceCandidatePoolSize: 4,
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
+    // ↓ Paste your Metered.ca TURN credentials here if srflx still fails ↓
+    // { urls: "turn:global.relay.metered.ca:80", username: "YOUR_USERNAME", credential: "YOUR_CREDENTIAL" },
+    // { urls: "turn:global.relay.metered.ca:443", username: "YOUR_USERNAME", credential: "YOUR_CREDENTIAL" },
+    // { urls: "turn:global.relay.metered.ca:443?transport=tcp", username: "YOUR_USERNAME", credential: "YOUR_CREDENTIAL" },
   ],
 };
 
@@ -56,11 +69,15 @@ export function initHost(onCode, onConnect, onMessage, onDisconnect) {
 }
 
 function _tryHostWithCode(code, onCode, onConnect) {
+  _onDisconn = null;
+
   if (_peer && !_peer.destroyed) {
     try {
       _peer.destroy();
     } catch (_) {}
   }
+
+  _conn = null;
 
   _peer = new Peer(code, { config: ICE_CONFIG });
 
@@ -104,13 +121,21 @@ function _tryHostWithCode(code, onCode, onConnect) {
 export function initGuest(code, onConnect, onMessage, onDisconnect) {
   _isHost = false;
   _onMessage = onMessage;
-  _onDisconn = onDisconnect;
+
+  // Null out handlers BEFORE destroying old peer so that any close/error
+  // events that fire during cleanup don't call the new disconnect handler.
+  _onDisconn = null;
 
   if (_peer && !_peer.destroyed) {
     try {
       _peer.destroy();
     } catch (_) {}
   }
+
+  _conn = null;
+
+  // Now safe to set the real handler — old peer is gone.
+  _onDisconn = onDisconnect;
 
   _peer = new Peer({ config: ICE_CONFIG });
 
