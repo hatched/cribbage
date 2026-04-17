@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>PeerJS Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
+    h1 { margin-bottom: 20px; font-size: 18px; color: #f0c040; }
+
+    .row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+
+    button {
+      padding: 10px 20px; border: none; border-radius: 6px;
+      background: #f0c040; color: #1a1a2e; font-weight: bold;
+      font-size: 15px; cursor: pointer;
+    }
+    button:active { opacity: 0.8; }
+
+    input {
+      padding: 10px; border-radius: 6px; border: 1px solid #555;
+      background: #16213e; color: #f0c040; font-family: monospace;
+      font-size: 20px; font-weight: bold; letter-spacing: 8px;
+      text-transform: uppercase; width: 120px; text-align: center;
+    }
+
+    #code-display {
+      font-size: 48px; font-weight: bold; letter-spacing: 12px;
+      color: #f0c040; padding: 12px 0;
+    }
+
+    #log {
+      background: #0f0f1a; border: 1px solid #333; border-radius: 8px;
+      padding: 12px; height: 360px; overflow-y: auto;
+      font-size: 13px; line-height: 1.6;
+    }
+    #log .entry { padding: 2px 0; border-bottom: 1px solid #1a1a2e; }
+    #log .ok   { color: #2ecc71; }
+    #log .recv { color: #3498db; }
+    #log .send { color: #f39c12; }
+    #log .err  { color: #e74c3c; }
+    #log .info { color: #aaa; }
+  </style>
+</head>
+<body>
+
+<h1>PeerJS Connectivity Test</h1>
+
+<div id="host-section">
+  <div class="row">
+    <button onclick="startHost()">Start (get code)</button>
+  </div>
+  <div id="code-display"></div>
+</div>
+
+<div id="guest-section">
+  <div class="row">
+    <input id="code-input" maxlength="4" placeholder="ABCD"
+           autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false">
+    <button onclick="startGuest()">Join</button>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+
+// ── RTCPeerConnection patch ───────────────────────────────────────────────────
+// Wait for ICE gathering to complete before returning from setLocalDescription.
+// Without this, the mDNS host candidate is the only one in-flight when the
+// offer/answer SDP is sent, and it fails instantly cross-network. By waiting,
+// every candidate (including the real public-IP srflx one) is already trickled
+// to the remote peer before ICE starts checking — so the good pair gets tried.
+(function patchRTC() {
+  var orig = RTCPeerConnection.prototype.setLocalDescription;
+  RTCPeerConnection.prototype.setLocalDescription = async function() {
+    await orig.apply(this, arguments);
+    if (this.iceGatheringState === 'complete') return;
+    var self = this;
+    await new Promise(function(resolve) {
+      var timer = setTimeout(resolve, 8000);
+      function done() {
+        if (self.iceGatheringState === 'complete' ||
+            self.connectionState === 'closed' ||
+            self.connectionState === 'failed') {
+          clearTimeout(timer);
+          self.removeEventListener('icegatheringstatechange', done);
+          self.removeEventListener('connectionstatechange', done);
+          resolve();
+        }
+      }
+      self.addEventListener('icegatheringstatechange', done);
+      self.addEventListener('connectionstatechange', done);
+    });
+  };
+}());
+
+// ── Config ────────────────────────────────────────────────────────────────────
+var ICE_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' }
+  ]
+};
+
+var CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+// ── Logging ───────────────────────────────────────────────────────────────────
+function log(msg, cls) {
+  var el = document.getElementById('log');
+  var line = document.createElement('div');
+  line.className = 'entry ' + (cls || 'info');
+  var t = new Date().toLocaleTimeString('en', { hour12: false });
+  line.textContent = '[' + t + '] ' + msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── Code gen ──────────────────────────────────────────────────────────────────
+function genCode() {
+  var code = '';
+  for (var i = 0; i < 4; i++) {
+    code += CHARS[Math.floor(Math.random() * CHARS.length)];
+  }
+  return code;
+}
+
+// ── Connection setup ──────────────────────────────────────────────────────────
+function setupConn(conn) {
+  conn.on('open', function() {
+    log('Data channel OPEN — auto-sending 3 test messages…', 'ok');
+
+    // Send 3 messages automatically, 400 ms apart
+    var messages = ['ping-1', 'ping-2', 'ping-3'];
+    messages.forEach(function(m, i) {
+      setTimeout(function() {
+        conn.send(m);
+        log('→ sent: ' + m, 'send');
+      }, i * 400);
+    });
+  });
+
+  conn.on('data', function(data) {
+    log('← received: ' + data, 'recv');
+    // Echo back so both sides see traffic
+    conn.send('echo: ' + data);
+    log('→ echoed: echo: ' + data, 'send');
+  });
+
+  conn.on('close', function() {
+    log('Connection closed', 'info');
+  });
+
+  conn.on('error', function(err) {
+    log('Connection error: ' + err, 'err');
+  });
+}
+
+// ── Host ──────────────────────────────────────────────────────────────────────
+function startHost() {
+  var code = genCode();
+  log('Creating peer with code: ' + code, 'info');
+
+  document.getElementById('code-display').textContent = code;
+
+  var peer = new Peer(code, { config: ICE_CONFIG });
+
+  peer.on('open', function(id) {
+    log('Registered on PeerJS server as: ' + id, 'ok');
+    log('Waiting for guest to enter code: ' + code + ' …', 'info');
+  });
+
+  peer.on('connection', function(conn) {
+    log('Guest is connecting (peer ID: ' + conn.peer + ')', 'info');
+    setupConn(conn);
+  });
+
+  peer.on('error', function(err) {
+    if (err.type === 'unavailable-id') {
+      log('Code taken, retrying…', 'info');
+      setTimeout(startHost, 200);
+    } else {
+      log('Peer error: ' + err.type + ' — ' + err.message, 'err');
+    }
+  });
+
+  peer.on('disconnected', function() {
+    log('Disconnected from PeerJS server', 'info');
+  });
+}
+
+// ── Guest ─────────────────────────────────────────────────────────────────────
+function startGuest() {
+  var code = document.getElementById('code-input').value.trim().toUpperCase();
+  if (code.length !== 4) {
+    log('Enter a 4-letter code first', 'err');
+    return;
+  }
+
+  log('Creating guest peer…', 'info');
+
+  var peer = new Peer({ config: ICE_CONFIG });
+
+  peer.on('open', function(id) {
+    log('Registered on PeerJS server as: ' + id, 'ok');
+    log('Connecting to host code: ' + code + ' …', 'info');
+    var conn = peer.connect(code, { reliable: true });
+    setupConn(conn);
+  });
+
+  peer.on('error', function(err) {
+    if (err.type === 'peer-unavailable') {
+      log('Code "' + code + '" not found — is the host ready?', 'err');
+    } else {
+      log('Peer error: ' + err.type + ' — ' + err.message, 'err');
+    }
+  });
+}
+
+</script>
+</body>
+</html>
